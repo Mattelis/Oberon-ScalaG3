@@ -1,6 +1,0 @@
-MODULE LambdaExpressions02;
-
-CONST
-  x = () => 1 * 2;
-
-END LambdaExpressions02.

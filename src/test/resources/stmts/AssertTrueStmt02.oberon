@@ -1,7 +1,0 @@
-MODULE AssertTrueModule;
-
-BEGIN
-    assert(False)
-END
-
-END AssertTrueModule.
