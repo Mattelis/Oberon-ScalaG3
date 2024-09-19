@@ -21,12 +21,24 @@ import scala.collection.mutable.ListBuffer
  * besides OO inheritance.
  */
 case class CoreModule(name: String,
+                        submodules: Set[String],
                         constants: List[Constant],
                         variables: List[VariableDeclaration],
                         procedures: List[Procedure[Expression]],
+                        tests: List[TestCore],
                         exp: Option[Expression]
                        ) {
   // def accept(v: OberonVisitor): v.T = v.visit(this)
+}
+
+case class TestCore(modifier: String,
+                name: String,
+                description: StringValue,
+                constants: List[Constant],
+                variables: List[VariableDeclaration],
+                exp: Expression
+                ) {
+  //def accept(v: OberonVisitor): v.T = v.visit(this)
 }
 
 // SequenceStatement(List[Stmt]) extends Stmt
@@ -42,7 +54,7 @@ case class ReadLongIntExp(varName: String) extends Expression
 case class ReadIntExp(varName: String) extends Expression
 case class ReadShortIntExp(varName: String) extends Expression
 case class ReadCharExp(varName: String) extends Expression
-case class WriteSExp(Expression: Expression) extends Expression
+case class WriteExp(Expression: Expression) extends Expression
 case class ProcedureCallExp(name: String, args: List[Expression])
     extends Expression
 case class TestCallExp(name: String) extends Expression
