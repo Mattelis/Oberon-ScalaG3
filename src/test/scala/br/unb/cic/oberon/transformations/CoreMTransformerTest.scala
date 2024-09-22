@@ -239,4 +239,86 @@ class CoreMTransformerTest extends AnyFunSuite {
     assert(transformedProcedure.stmt.isInstanceOf[AssignmentExp])
     assert(transformedProcedure.variables.contains(VariableDeclaration("x", IntegerType)))
   }
+
+  test("Test transformation of an OberonModule into its Core representation") {
+  val oberonModule = OberonModule(
+    name = "TestModule",
+    submodules = Set("SubModule1", "SubModule2"),
+    userTypes = List(), 
+    constants = List(Constant("PI", RealValue(3.14))),
+    variables = List(VariableDeclaration("x", IntegerType)),
+    procedures = List(
+      Procedure(
+        name = "simpleProcedure",
+        args = List(),
+        returnType = Some(IntegerType),
+        constants = List(),
+        variables = List(VariableDeclaration("y", IntegerType)),
+        stmt = AssignmentStmt(VarAssignment("y"), IntValue(10))
+      )
+    ),
+    tests = List(
+      Test(
+        modifier = "public",
+        name = "test1",
+        description = StringValue("Test description"),
+        constants = List(Constant("A", IntValue(1))),
+        variables = List(VariableDeclaration("z", BooleanType)),
+        stmt = AssignmentStmt(VarAssignment("x"), IntValue(42))
+      )
+    ),
+    stmt = Some(AssignmentStmt(VarAssignment("x"), IntValue(42)))
+  )
+
+  val transformedModule = CoreMTransformer.reduceOberonModule(oberonModule)
+
+  //verificar se as informações foram preservadas
+  assert(transformedModule.name == "TestModule")
+  assert(transformedModule.submodules == Set("SubModule1", "SubModule2"))
+  assert(transformedModule.constants == List(Constant("PI", RealValue(3.14))))
+  assert(transformedModule.variables == List(VariableDeclaration("x", IntegerType)))
+  transformedModule.exp match {
+    case Some(exp) =>
+      assert(exp.isInstanceOf[AssignmentExp])
+      exp match {
+        case AssignmentExp(VarAssignment("x"), IntValue(42)) =>
+          succeed 
+        case _ => fail("A expressão principal não foi transformada corretamente")
+      }
+    case None => fail("Nenhuma expressão principal encontrada")
+  }
+
+  assert(transformedModule.procedures.size == 1)
+
+  val transformedProcedure = transformedModule.procedures.head
+  assert(transformedProcedure.name == "simpleProcedure")
+  assert(transformedProcedure.returnType.contains(IntegerType))
+  
+  assert(transformedProcedure.variables == List(VariableDeclaration("y", IntegerType)))
+
+  transformedProcedure.stmt match {
+    case AssignmentExp(VarAssignment("y"), IntValue(10)) =>
+      succeed 
+    case _ => fail("A declaração do procedimento não foi transformada corretamente")
+  }
+
+  // Verificar se os testes foram transformados corretamente
+  assert(transformedModule.tests.size == 1)
+  
+  val transformedTest = transformedModule.tests.head
+  assert(transformedTest.modifier == "public")
+  assert(transformedTest.name == "test1")
+  assert(transformedTest.description == StringValue("Test description"))
+  assert(transformedTest.constants == List(Constant("A", IntValue(1))))
+  assert(transformedTest.variables == List(VariableDeclaration("z", BooleanType)))
+
+  transformedTest.exp match {
+    case AssignmentExp(VarAssignment("x"), IntValue(42)) =>
+      succeed 
+    case _ => fail("A expressão do teste não foi transformada corretamente")
+  }
+}
+
+
+
 }
